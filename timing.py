@@ -4,7 +4,9 @@ import dpkt
 import socket
 
 def printPcap(pcap):
-    for (ts, buf) in pcap:
+    previous_ts = None  # Timestamp of previous packet
+
+    for (ts, buf) in pcap:                      #ts- timestamp
         try:
             eth = dpkt.ethernet.Ethernet(buf)
             ip = eth.data
@@ -14,8 +16,8 @@ def printPcap(pcap):
                 transport_layer = "TCP"
                 src_port = ip.data.sport
                 dst_port = ip.data.dport
-                protocol_header = ip.data       #header me sab kuch aa jata hai isliye usko bas data se access kar rahe hai
-                payload = ip.data.data          #payload data section me rahta hai head ke isliye data.data se access kiya hua hai
+                protocol_header = ip.data
+                payload = ip.data.data
             elif isinstance(ip.data, dpkt.udp.UDP):
                 transport_layer = "UDP"
                 src_port = ip.data.sport
@@ -41,7 +43,14 @@ def printPcap(pcap):
             # Analyze and print the payload
             print(f'{transport_layer} Payload: {repr(payload)}')
 
+            # Calculate and print the time difference between packets
+            if previous_ts is not None:
+                time_diff = ts - previous_ts
+                print(f'Time difference: {time_diff} seconds')
+
             print()
+
+            previous_ts = ts  # Update the previous timestamp
 
         except:
             pass
